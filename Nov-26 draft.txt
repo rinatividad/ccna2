@@ -1,0 +1,371 @@
+
+@I4/Google DNS (1st usable)
+conf t
+ipv6 unicast-routing 
+int e0/0
+no shu
+ipv6 add fd00:2::80:0:1/90
+end
+ping fd00:2::80:0:1
+
+@R4 (last usable)
+conf t
+ipv6 unicast-routing 
+int e0/0
+no shu
+ipv6 add fd00:2::bf:ffff:ffff/90
+end 
+ping fd00:2::80:0:1
+
+@R4 (1st usable)
+conf t
+ipv6 unicast-routing 
+int e0/1
+no shu
+ipv6 add fd00:3:0:33::1401/118
+end
+
+@P1 (last usable)
+conf t
+ipv6 unicast-routing 
+int e0/1
+no shu
+ipv6 add fd00:3:0:33::17ff/118
+end 
+
+@P1 (last usable and NOT anycast)
+conf t
+ipv6 unicast-routing 
+int e0/1
+no shu
+ipv6 add fd00:3:0:33::177f/118
+end 
+
+----
+
+OSI DISCUSSION
+
+!@cmd 
+netstat -s -p tcp --- scanning of established connecions 
+netstat -n -p tcp --- scanning of established connecions (faster)
+NOTE: in result, higher port number is the one connecting 
+findstr --- filter command on cmd 
+port 445 (SMB)
+net use \\10.32.1.10\ipc$
+net use x: /delete  --- how to delete 
+net use x: \\10.32.1.10\c$ --- how to have access other's drive 
+dir /ah --- access other's drive 
+mkdir [folder name] --- create folder
+nmap -v [IP] --- to see open ports
+
+For IP phone to work, port 69 (tftp) , 2000 (SCCP/Cisco proprietary) , 5060 (SIP/Open source) should be open
+
+!@Corebaba: 
+conf t
+monitor session 1 source interface fa0/3,fa0/5,fa0/7
+monitor session 1 destination interface fa0/1,fa0/9
+end
+
+----
+
+UTM-PH > next > small > next > import
+refer to images
+!@cmd 
+ping 192.168.102.11 --- mgmt IPs
+ping 192.168.102.12 --- mgmt IPs
+
+BIGAY INTERNET TO UTM-PH AND UTM-JP
+conf t 
+ip route 0.0.0.0 0.0.0.0 208.8.8.2 
+ip domain lookup
+ip name-server 8.8.8.8
+end
+
+1. Get IP address
+UTM-PH#ping www.pornhub.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 66.254.114.41, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 150/150/151 ms
+UTM-PH#
+
+UTM-PH#ping redtube.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 66.254.114.238, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 156/157/158 ms
+UTM-PH#
+
+UTM-PH#ping faketaxi.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 66.254.114.234, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 156/157/159 ms
+UTM-PH#
+
+UTM-PH#ping bangbros.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 66.254.114.234, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 157/157/159 ms
+UTM-PH#
+
+UTM-PH#ping pinayflix.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 104.21.55.88, timeout is 2 seconds:
+!.!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 61/62/63 ms
+UTM-PH#
+
+UTM-PH#ping sulasok.tv
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 172.67.159.23, timeout is 2 seconds:
+!!!!.
+Success rate is 80 percent (4/5), round-trip min/avg/max = 63/67/78 ms
+UTM-PH#
+
+UTM-PH#ping iyottube.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 208.77.20.35, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 214/226/259 ms
+UTM-PH#
+
+UTM-PH#ping xhamster.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 104.16.3.81, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 3/4/5 ms
+UTM-PH#
+
+UTM-PH#ping chaturbate.com
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 104.19.161.95, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 3/4/5 ms
+UTM-PH#
+
+!@UTM-PH
+config t
+ no ip access-list standard NOPORN
+ ip access-list standard NOPORN
+  deny 66.254.114.0  0.0.0.255
+  deny 104.0.0.0  0.255.255.255
+  deny 172.67.159.23  0.0.0.0
+  deny host 208.77.20.35
+  permit any
+ int gi 1
+  ip access-group NOPORN in
+  end
+show ip access-list int g1
+
+NOTE: below is same thing 
+  deny 172.67.159.23  0.0.0.0 - w/ wildcard
+  deny host 208.77.20.35		
+
+EX.1 BLOCK SCHOOLS
+Create FW policy NOSCHOOL to block ff: 
+
+UTM-PH#ping www.dlsu.edu.ph
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 172.66.161.211, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 22/23/25 ms
+UTM-PH#ping www.ccp.edu.ph 
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 50.6.160.47, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 220/220/221 ms
+UTM-PH#ping www.feu.edu.ph
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 184.168.125.216, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 36/36/36 ms
+UTM-PH#ping www.ue.edu.ph 
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 155.137.92.102, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 6/7/10 ms
+
+config t
+ no ip access-list standard NOSCHOOL
+ ip access-list standard NOSCHOOL
+  deny 172.66.161.211 0.0.0.0
+  deny 50.6.160.47 0.0.0.0
+  deny 184.168.125.216 0.0.0.0
+  deny 155.137.92.102 0.0.0.0
+  permit any
+ int gi 1
+  ip access-group NOSCHOOL in
+  end
+show ip access-list int g1
+
+NOTE: CHECK WHAT THIS MEANS
+UTM-PH#ping www.tup.edu.ph       
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.124.249.12, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 60/62/67 ms
+UTM-PH#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+UTM-PH(config)#ip access-list standard NOPORN
+UTM-PH(config-std-nacl)#deny 192.124.249.12 0.0.0.0
+Access rule can't be configured at higher sequence num as it is part of the existing rule at sequence num 50
+
+TO SEE WHAT OTHER IPs ARE USED:
+PS C:\Users\Administrator> nslookup -type=www www.dlsu.edu.ph 8.8.8.8
+unknown query type: www
+Server:  dns.google
+Address:  8.8.8.8
+
+Non-authoritative answer:
+Name:    www.dlsu.edu.ph
+Addresses:  2606:4700:10::6814:2aa8
+          2606:4700:10::ac42:a1d3
+          104.20.42.168
+          172.66.161.211
+
+nmap -v www.neu.edu.ph
+nmap -v www.sti.edu.ph
+nmap -v www.dpwh.gov.ph
+
+Port 19/TCP "Chargen"
+How to exit:
+Ctrl Shift 6 
+Ctrl Shift 6 X
+
+disco or disco 1 
+
+BLOCK OTHER PORTS EXCEPT http 80, https 443, ping/icmp, ssh 22, dns 53
+!@UTM-PH
+conf t
+ no ip access-list extended FWP4
+ ip access-list extended FWP4
+ permit tcp Any host www.bet100.com eq 80 log
+ permit tcp Any host www.bet100.com eq 443 log
+ permit icmp Any host www.bet100.com log
+ permit tcp Any host www.bet100.com eq 22 log
+ permit tcp Any host www.bet100.com eq 53 log
+ Int gi 3 ----- correction here, should be port gi 1 
+  ip access-group FWP4 in
+  end
+  
+TO VERIFY: nmap -v www.bet100.com
+  
+Create an access-list named FWP6 to open the following ports:  
+www.bet100.com open only sccp 2000, sip 5060, imap 143, smtp 25, pop3 110, ftp 21, tftp 69, ntp 123
+
+~~~
+!@UTM-PH
+conf t
+ no ip access-list extended FWP6
+ ip access-list extended FWP6
+ permit tcp Any host www.bet100.com eq 2000 log
+ permit tcp Any host www.bet100.com eq 5060 log
+ permit tcp Any host www.bet100.com eq 143 log
+ permit tcp Any host www.bet100.com eq 25 log
+ permit tcp Any host www.bet100.com eq 110 log
+ permit tcp Any host www.bet100.com eq 21 log
+ permit udp Any host www.bet100.com eq 69 log
+ permit udp Any host www.bet100.com eq 123 log
+ Int gi 1
+  ip access-group FWP6 in
+  end
+  
+SMTP port 25 - server to server / usually used
+FTP port 20 - data 
+FTP port 21 - actual port 
+
+To see ports using UDP ports: 
+nmap -sU --min-rate 2000 www.bet100.com
+
+---
+
+!@cmd 
+telnet 10.31.1.2
+pass: tup
+pass: ece
+pass: pass
+
+public key - need to read a cipher message
+
+HOW TO ESTABLISH SECURE CONNECTION
+1. need a non default hostname 
+!@CTAAS
+conf t 
+hostname CTAAS-SEC
+ip domain name ccna.sec 
+crypto key gene rsa
+
+The name for the keys will be: CTAAS-SEC.ccna.sec
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 2048
+% Generating 2048 bit RSA keys, keys will be non-exportable...
+[OK] (elapsed time was 19 seconds)
+
+ip ssh ver 2
+line vty 0 14   
+login local
+transport input all
+
+username admin privilege 15 secret pass 
+end
+
+FILE: csr1000v-universalk9.17.03.01a (VOIP Features)
+VM: UTM-PH
+VM: UTM-JP
+
+FILE: yVM.ova 
+VM: BLDG-PH
+VM: BLDG-JP
+
+PSK=keykeymo
+
+---
+
+AUTOMATION DISCUSSION
+
+@UTM-PH 
+conf t
+ username admin priv 15 secret pass
+ ip http server
+ ip http secure-server
+ restconf
+ end
+
+NOTE for restconf: 
+-api
+-restconf uses HTTPS protocol
+-port: 443
+-encoding: JSON/XML
+-HTTP methods: GET PUT PATCH DELETE
+
+curl.exe -k -u admin:pass -H "Accept: application/yang-data+xml" https://192.168.102.11/restconf/data/ietf-interfaces:interfaces
+
+DO POSTMAN ACCOUNT
+
+JSON 
+-starts with curly braces {} 
+-only double quotes "
+-should have no capital letters
+
+NETCONF
+-Protocol: SSH
+-Port: 830
+-Encoding: XML
+-RPC
+
+distri control plane:
+mgmt plane - gui
+ctrl plane - brain
+data plane - actual action
+
+sdn 
+-centralized ctrl plane
+
+EEM - Event embedded manager 
+-Cisco prevents anomaly in configuration incase accidental reconfig
+
