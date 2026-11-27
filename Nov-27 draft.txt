@@ -1,0 +1,151 @@
+
+root 
+C1sc0123
+
+1yearXP:
+http://208.8.8.133/otrs/customer.pl
+
+
+3upXP: 
+http://208.8.8.133/otrs/index.pl
+admin
+C1sc0123
+
+kc@shell.com.ph
+
+---
+
+802.1q 
+access & trunk port
+
+designated port -- priority
+root port -- only 1 on each switch with lowest value 
+alternate port - can only pair with designated port
+backup port - only happens if cable is connected to same device 
+
+Root Identifier: 32K --- not good / default setting 
+				 2 / 28K
+				 24K --- best 
+		
+802.1d  
+listening > learning = 30s 
+spanning-tree pvst
+		
+802.1w 
+"rapid", no converging time
+-faster and usual use on banks, etc. 
+spanning-tree rapid-pvst
+
+802.1s 
+spanning-tree mst
+
+802.1x 
+
+----
+
+HSRP DISCUSSION
+
+@TAAS/PLDTinternet:
+config t
+hostname coretaasPLDT
+Track 1 Int gi 0/1 line-protocol
+Int vlan 1
+standby 1 ip 10.31.1.6
+standby 1 preempt
+standby 1 Priority 150
+standby 1 Track 1 decrement 60
+
+COREBABA/GLOBE:
+config t
+hostname corebabaGLOBE
+Int vlan 1
+standby 1 ip 10.31.1.6
+standby 1 preempt
+standby 1 Priority 100
+end
+
+----
+
+HOW TO RUN ELK AT HOME:
+root
+Cisc0123
+systemctl restart elasticsearch.service
+ip addr 
+
+http://208.8.8.133:5601
+admin
+Cisc0123
+
+OnCiscoFW: 
+config t
+logging on
+logging host 208.8.8.133 transport udp port 9001
+logging trap informational
+end
+!-------
+config t
+archive
+log config
+logging enable
+notify syslog
+end
+!-------------
+config t
+login on-failure log
+login on-success log
+end
+
+CONFIG T
+no logging console
+Int Gi 2
+no shut
+ip add 192.168.102.11 255.255.255.0
+
+!@telnet use secureCRT: telnet 192.168.108.5
+!in SEcureCRT, Paste This:
+config t
+IP ROUTE 0.0.0.0  0.0.0.0 208.8.8.2
+ip name-server 8.8.8.8 1.1.1.1
+ip domain lookup
+int gi 1
+no shut
+ip add 208.8.8.11 255.255.255.0
+int gi 3
+no shut
+ip add 192.168.103.11 255.255.255.0
+line vty 0 14
+ transport input all
+ exec-timeout 0 0
+do sh ip int brief
+
+CISCO AND ELK STACK INTEGRATION:
+config t
+NO ip access-list standard NOPORN
+ip access-list standard NOPORN
+DENY 66.254.0.0 0.0.255.255 log
+deny 161.49.0.0 0.0.255.255 log
+DENY 104.21.0.0 0.0.255.255 log
+DENY 68.235.0.0 0.0.255.255 log
+DENY 104.17.0.0 0.0.255.255 log
+DENY 88.208.0.0 0.0.255.255 log
+DENY 208.77.0.0 0.0.255.255 log
+DENY 172.67.0.0 0.0.255.255 log
+Permit Any
+Int Gi 1
+ ip access-group NOPORN in
+end
+
+http://208.8.8.133/otrs/index.pl?Action=AdminSLA 
+http://208.8.8.133/otrs/customer.pl?Action=CustomerTicketOverview;Subaction=MyTickets 
+
+to get ip on vmware:
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
+reboot
+
+enable ipv6:
+conf t 
+ipv6 unicast-routing 
+int e0/0
+ipv6 enable 
+ipv6 add 2001:db8:12::1/126
+do ping  ipv6 2001:db8:12::5
